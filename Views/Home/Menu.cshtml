@@ -1,0 +1,251 @@
+﻿@{
+    ViewData["Title"] = "Menu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Menu Header -->
+<div class="menu-header">
+    <div class="container">
+        <h1><i class="fas fa-utensils me-3"></i>Menu</h1>
+    </div>
+</div>
+
+<div class="container-fluid px-4">
+    <!-- Category Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="category-tabs">
+                <button class="category-btn active" data-category="all">
+                    All Items
+                </button>
+                <button class="category-btn" data-category="rolls">
+                    Menu 1/rolls
+                </button>
+                <button class="category-btn" data-category="burgers">
+                    Menu 2/burgers
+                </button>
+                <button class="category-btn" data-category="drinks">
+                    drinks
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Items Grid -->
+    <div class="row menu-container">
+        <!-- Rolls Section -->
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 menu-item" data-category="rolls">
+            <div class="card h-100 menu-item-card">
+                <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                    <img src="~/images/Amaals-masala steak club.jpeg" class="card-img-top h-100 w-100"
+                         style="object-fit: cover;" alt="Masala Steak Club">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="item-name">Masala steak club</h5>
+                    <p class="item-description flex-grow-1">
+                        Spicy masala steak with fresh ingredients
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="price-container">
+                            <span class="h5 fw-bold">R36.00</span>
+                            <small><s>R39.00</s></small>
+                        </div>
+                        <button class="btn btn-amaals" onclick="addToCart('masala-steak', 'Masala steak club', 36.00)">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 menu-item" data-category="rolls">
+            <div class="card h-100 menu-item-card">
+                <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                    <img src="~/images/Amaals-hotdog with chips.jpeg" class="card-img-top h-100 w-100"
+                         style="object-fit: cover;" alt="Hot Dog">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="item-name">Hot dog</h5>
+                    <p class="item-description flex-grow-1">
+                        Classic hotdog with chips and sauce
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="price-container">
+                            <span class="h5 fw-bold">R29.00</span>
+                            <small><s>R32.00</s></small>
+                        </div>
+                        <button class="btn btn-amaals" onclick="addToCart('hotdog', 'Hot dog', 29.00)">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 menu-item" data-category="rolls">
+            <div class="card h-100 menu-item-card">
+                <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                    <img src="~/images/Amaals-live.jpg" class="card-img-top h-100 w-100"
+                         style="object-fit: cover;" alt="Gatsby Roll">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="item-name">Gatsby Roll</h5>
+                    <p class="item-description flex-grow-1">
+                        Traditional Cape Town gatsby with chips
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="price-container">
+                            <span class="h5 fw-bold">R35.00</span>
+                            <small><s>R38.00</s></small>
+                        </div>
+                        <button class="btn btn-amaals" onclick="addToCart('gatsby', 'Gatsby Roll', 35.00)">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 menu-item" data-category="rolls">
+            <div class="card h-100 menu-item-card">
+                <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                    <img src="~/images/Amaals-Bashews.jpeg" class="card-img-top h-100 w-100"
+                         style="object-fit: cover;" alt="Bashews">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="item-name">Bashews</h5>
+                    <p class="item-description flex-grow-1">
+                        Traditional cashew roll with spices
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="price-container">
+                            <span class="h5 fw-bold">R32.00</span>
+                            <small><s>R35.00</s></small>
+                        </div>
+                        <button class="btn btn-amaals" onclick="addToCart('bashews', 'Bashews', 32.00)">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Burgers Section -->
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 menu-item" data-category="burgers">
+            <div class="card h-100 menu-item-card">
+                <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                    <img src="~/images/Amaals-Chicken burger.jpeg" class="card-img-top h-100 w-100"
+                         style="object-fit: cover;" alt="Chicken Burger">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="item-name">Chicken Burger</h5>
+                    <p class="item-description flex-grow-1">
+                        Juicy chicken burger with fresh lettuce and sauce
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="price-container">
+                            <span class="h5 fw-bold">R36.00</span>
+                            <small><s>R40.00</s></small>
+                        </div>
+                        <button class="btn btn-amaals" onclick="addToCart('chicken-burger', 'Chicken Burger', 36.00)">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 menu-item" data-category="burgers">
+            <div class="card h-100 menu-item-card">
+                <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                    <img src="~/images/Amaals-Beef burger.webp" class="card-img-top h-100 w-100"
+                         style="object-fit: cover;" alt="Beef Burger">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="item-name">Beef Burger</h5>
+                    <p class="item-description flex-grow-1">
+                        Premium beef burger with all the fixings
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="price-container">
+                            <span class="h5 fw-bold">R38.00</span>
+                            <small><s>R42.00</s></small>
+                        </div>
+                        <button class="btn btn-amaals" onclick="addToCart('beef-burger', 'Beef Burger', 38.00)">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drinks Section -->
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 menu-item" data-category="drinks">
+            <div class="card h-100 menu-item-card">
+                <div class="card-img-container" style="height: 200px; overflow: hidden; background: linear-gradient(135deg, var(--amaals-cream) 0%, #F0D078 100%); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-glass-cheers" style="font-size: 60px; color: var(--amaals-red); opacity: 0.7;"></i>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="item-name">Soft Drinks</h5>
+                    <p class="item-description flex-grow-1">
+                        Variety of cold soft drinks and beverages
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="price-container">
+                            <span class="h5 fw-bold">R12.00</span>
+                        </div>
+                        <button class="btn btn-amaals" onclick="addToCart('soft-drink', 'Soft Drinks', 12.00)">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 menu-item" data-category="drinks">
+            <div class="card h-100 menu-item-card">
+                <div class="card-img-container" style="height: 200px; overflow: hidden; background: linear-gradient(135deg, var(--amaals-cream) 0%, #F0D078 100%); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-coffee" style="font-size: 60px; color: var(--amaals-red); opacity: 0.7;"></i>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="item-name">Coffee</h5>
+                    <p class="item-description flex-grow-1">
+                        Freshly brewed coffee and hot beverages
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="price-container">
+                            <span class="h5 fw-bold">R15.00</span>
+                        </div>
+                        <button class="btn btn-amaals" onclick="addToCart('coffee', 'Coffee', 15.00)">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 menu-item" data-category="drinks">
+            <div class="card h-100 menu-item-card">
+                <div class="card-img-container" style="height: 200px; overflow: hidden; background: linear-gradient(135deg, var(--amaals-cream) 0%, #F0D078 100%); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-glass-water" style="font-size: 60px; color: var(--amaals-red); opacity: 0.7;"></i>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="item-name">Water</h5>
+                    <p class="item-description flex-grow-1">
+                        Pure bottled water
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="price-container">
+                            <span class="h5 fw-bold">R8.00</span>
+                        </div>
+                        <button class="btn btn-amaals" onclick="addToCart('water', 'Water', 8.00)">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* All JavaScript functionality is now handled in amaals-custom.js *@
