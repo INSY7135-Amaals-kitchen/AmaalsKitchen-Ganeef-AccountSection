@@ -4,7 +4,7 @@ namespace AmaalsKitchen.Models
 {
     public class EditProfileViewModel
     {
-        // Hidden/optional identifier - helps when session is lost
+     
         [EmailAddress]
         public string Email { get; set; } = "";
 

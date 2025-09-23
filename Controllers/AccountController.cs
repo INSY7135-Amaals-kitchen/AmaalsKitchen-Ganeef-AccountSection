@@ -3,6 +3,8 @@ using AmaalsKitchen.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity; 
+using System;
 using System.Linq;
 
 namespace AmaalsKitchen.Controllers
@@ -11,11 +13,13 @@ namespace AmaalsKitchen.Controllers
     {
         private readonly ILogger<AccountController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly PasswordHasher<User> _passwordHasher;
 
         public AccountController(ILogger<AccountController> logger, ApplicationDbContext context)
         {
             _logger = logger;
             _context = context;
+            _passwordHasher = new PasswordHasher<User>();
         }
 
         // ===================== LOGIN =====================
@@ -28,16 +32,24 @@ namespace AmaalsKitchen.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = _context.Users
-                    .FirstOrDefault(u => u.Email == model.Email && u.Password == model.Password);
-
+                var user = _context.Users.FirstOrDefault(u => u.Email == model.Email);
                 if (user != null)
                 {
-                    HttpContext.Session.SetString("UserEmail", user.Email);
-                    HttpContext.Session.SetString("UserName", user.FirstName);
+                    // verify hash
+                    var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
 
-                    TempData["SuccessMessage"] = "Login successful!";
-                    return RedirectToAction("Index", "Home");
+                    if (result == PasswordVerificationResult.Success)
+                    {
+                        // update last login
+                        user.LastLoginDate = DateTime.UtcNow;
+                        _context.SaveChanges();
+
+                        HttpContext.Session.SetString("UserEmail", user.Email);
+                        HttpContext.Session.SetString("UserName", user.FirstName);
+
+                        TempData["SuccessMessage"] = "Login successful!";
+                        return RedirectToAction("Index", "Home");
+                    }
                 }
 
                 ModelState.AddModelError("", "Invalid email or password");
@@ -68,8 +80,11 @@ namespace AmaalsKitchen.Controllers
                     LastName = model.LastName,
                     Email = model.Email,
                     PhoneNumber = model.PhoneNumber,
-                    Password = model.Password // ⚠️ hash in production
+                    CreatedDate = DateTime.UtcNow
                 };
+
+                // hash password before saving
+                user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
 
                 _context.Users.Add(user);
                 _context.SaveChanges();
@@ -80,18 +95,16 @@ namespace AmaalsKitchen.Controllers
 
             return View(model);
         }
+
+        // ===================== RESET PASSWORD =====================
         [HttpGet]
-        public IActionResult ResetPassword()
-        {
-            return View();
-        }
+        public IActionResult ResetPassword() => View();
 
         [HttpPost]
         public IActionResult ResetPassword(ResetPasswordViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // 1. Find user by email
                 var user = _context.Users.FirstOrDefault(u => u.Email == model.Email);
                 if (user == null)
                 {
@@ -99,20 +112,16 @@ namespace AmaalsKitchen.Controllers
                     return View(model);
                 }
 
-                // 2. Update password (⚠️ Hash it in real apps, don’t store plain text)
-                user.Password = model.NewPassword;
+                // hash new password
+                user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
                 _context.SaveChanges();
 
-                // 3. Redirect with success
                 TempData["SuccessMessage"] = "Your password has been reset successfully! You can log in now.";
                 return RedirectToAction("Login");
             }
 
             return View(model);
         }
-
-
-
 
         // ===================== LOGOUT =====================
         public IActionResult Logout()
@@ -143,17 +152,11 @@ namespace AmaalsKitchen.Controllers
         {
             var email = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(email))
-            {
-                _logger.LogWarning("EditProfile(GET): no session email -> redirect to Login");
                 return RedirectToAction("Login");
-            }
 
             var user = _context.Users.FirstOrDefault(u => u.Email == email);
             if (user == null)
-            {
-                _logger.LogWarning("EditProfile(GET): user not found for email {Email}", email);
                 return NotFound();
-            }
 
             var model = new EditProfileViewModel
             {
@@ -171,36 +174,21 @@ namespace AmaalsKitchen.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult EditProfile(EditProfileViewModel model)
         {
-            _logger.LogInformation("EditProfile(POST) called. SessionEmail={SessionEmail}, ModelEmail={ModelEmail}",
-                HttpContext.Session.GetString("UserEmail"), model?.Email);
-
             var sessionEmail = HttpContext.Session.GetString("UserEmail");
             var emailToUse = sessionEmail ?? model?.Email;
 
             if (string.IsNullOrEmpty(emailToUse))
             {
-                _logger.LogWarning("EditProfile(POST): no email available (session and model empty).");
                 TempData["ErrorMessage"] = "Your session expired. Please log in again.";
                 return RedirectToAction("Login");
             }
 
             if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("EditProfile(POST): ModelState invalid. Listing errors:");
-                foreach (var kvp in ModelState)
-                {
-                    foreach (var err in kvp.Value.Errors)
-                        _logger.LogWarning(" - {Field}: {Error}", kvp.Key, err.ErrorMessage);
-                }
                 return View(model);
-            }
 
             var user = _context.Users.FirstOrDefault(u => u.Email == emailToUse);
             if (user == null)
-            {
-                _logger.LogWarning("EditProfile(POST): user not found for email {Email}", emailToUse);
                 return NotFound();
-            }
 
             user.FirstName = model.FirstName;
             user.LastName = model.LastName;
@@ -211,45 +199,7 @@ namespace AmaalsKitchen.Controllers
             HttpContext.Session.SetString("UserName", user.FirstName);
 
             TempData["SuccessMessage"] = "Profile updated successfully!";
-            _logger.LogInformation("EditProfile(POST): Successfully updated profile for {Email}", emailToUse);
-
             return RedirectToAction("Profile");
-        }
-
-        // ===================== DEBUG AJAX ENDPOINT (for troubleshooting only) =====================
-        // NOTE: This endpoint ignores antiforgery and exists only to help diagnose whether the browser can reach the server.
-        // Remove or secure this in production.
-        [HttpPost]
-        [Route("Account/EditProfileAjax")]
-        [IgnoreAntiforgeryToken]
-        public IActionResult EditProfileAjax([FromBody] EditProfileViewModel model)
-        {
-            _logger.LogInformation("EditProfileAjax received (debug). Model: {@Model}", model);
-
-            var sessionEmail = HttpContext.Session.GetString("UserEmail");
-            var emailToUse = sessionEmail ?? model?.Email;
-            if (string.IsNullOrEmpty(emailToUse))
-            {
-                return BadRequest("No email provided and session missing.");
-            }
-
-            var user = _context.Users.FirstOrDefault(u => u.Email == emailToUse);
-            if (user == null)
-            {
-                return NotFound("User not found.");
-            }
-
-            if (model != null)
-            {
-                user.FirstName = model.FirstName ?? user.FirstName;
-                user.LastName = model.LastName ?? user.LastName;
-                user.PhoneNumber = model.PhoneNumber ?? user.PhoneNumber;
-                _context.SaveChanges();
-                HttpContext.Session.SetString("UserName", user.FirstName);
-                return Ok(new { message = "Saved via AJAX", email = emailToUse });
-            }
-
-            return BadRequest("Empty model.");
         }
     }
 }
