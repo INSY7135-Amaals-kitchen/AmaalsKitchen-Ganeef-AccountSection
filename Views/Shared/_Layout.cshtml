@@ -63,6 +63,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" asp-controller="Orders" asp-action="MyOrders">
+                                <i class="fas fa-shopping-cart me-1"></i>Orders
+                                
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">
                                 <i class="fas fa-info-circle me-1"></i>About
                             </a>
@@ -127,7 +133,7 @@
 
                         <!-- Cart icon -->
                         <li class="nav-item">
-                            <a class="nav-link position-relative" href="#" title="Shopping Cart">
+                            <a class="nav-link position-relative" asp-controller="Orders" asp-action="Checkout" title="Shopping Cart">
                                 <i class="fas fa-shopping-cart"></i>
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
                                       style="background-color: var(--amaals-cream); color: var(--amaals-red); font-size: 10px;">

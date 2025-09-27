@@ -50,7 +50,7 @@
                             <span class="h5 fw-bold">R36.00</span>
                             <small><s>R39.00</s></small>
                         </div>
-                        <button class="btn btn-amaals" onclick="addToCart('masala-steak', 'Masala steak club', 36.00)">
+                        <button class="btn btn-amaals" onclick="addToCart(1, 'Masala steak club', 36.00, '/images/Amaals-masala steak club.jpeg')">
                             <i class="fas fa-plus me-1"></i>Add
                         </button>
                     </div>
@@ -74,7 +74,7 @@
                             <span class="h5 fw-bold">R29.00</span>
                             <small><s>R32.00</s></small>
                         </div>
-                        <button class="btn btn-amaals" onclick="addToCart('hotdog', 'Hot dog', 29.00)">
+                        <button class="btn btn-amaals" onclick="addToCart(2, 'Hot dog', 29.00, '/images/Amaals-hotdog with chips.jpeg')">
                             <i class="fas fa-plus me-1"></i>Add
                         </button>
                     </div>
@@ -98,7 +98,7 @@
                             <span class="h5 fw-bold">R35.00</span>
                             <small><s>R38.00</s></small>
                         </div>
-                        <button class="btn btn-amaals" onclick="addToCart('gatsby', 'Gatsby Roll', 35.00)">
+                        <button class="btn btn-amaals" onclick="addToCart(3, 'Gatsby Roll', 35.00, '/images/Amaals-live.jpg')">
                             <i class="fas fa-plus me-1"></i>Add
                         </button>
                     </div>
@@ -122,7 +122,7 @@
                             <span class="h5 fw-bold">R32.00</span>
                             <small><s>R35.00</s></small>
                         </div>
-                        <button class="btn btn-amaals" onclick="addToCart('bashews', 'Bashews', 32.00)">
+                        <button class="btn btn-amaals" onclick="addToCart(4, 'Bashews', 32.00, '/images/Amaals-Bashews.jpeg')">
                             <i class="fas fa-plus me-1"></i>Add
                         </button>
                     </div>
@@ -147,7 +147,7 @@
                             <span class="h5 fw-bold">R36.00</span>
                             <small><s>R40.00</s></small>
                         </div>
-                        <button class="btn btn-amaals" onclick="addToCart('chicken-burger', 'Chicken Burger', 36.00)">
+                        <button class="btn btn-amaals" onclick="addToCart(5, 'Chicken Burger', 36.00, '/images/Amaals-Chicken burger.jpeg')">
                             <i class="fas fa-plus me-1"></i>Add
                         </button>
                     </div>
@@ -171,7 +171,7 @@
                             <span class="h5 fw-bold">R38.00</span>
                             <small><s>R42.00</s></small>
                         </div>
-                        <button class="btn btn-amaals" onclick="addToCart('beef-burger', 'Beef Burger', 38.00)">
+                        <button class="btn btn-amaals" onclick="addToCart(6, 'Beef Burger', 38.00, '/images/Amaals-Beef burger.webp')">
                             <i class="fas fa-plus me-1"></i>Add
                         </button>
                     </div>
@@ -194,7 +194,7 @@
                         <div class="price-container">
                             <span class="h5 fw-bold">R12.00</span>
                         </div>
-                        <button class="btn btn-amaals" onclick="addToCart('soft-drink', 'Soft Drinks', 12.00)">
+                        <button class="btn btn-amaals" onclick="addToCart(7, 'Soft Drinks', 12.00, '')">
                             <i class="fas fa-plus me-1"></i>Add
                         </button>
                     </div>
@@ -216,7 +216,7 @@
                         <div class="price-container">
                             <span class="h5 fw-bold">R15.00</span>
                         </div>
-                        <button class="btn btn-amaals" onclick="addToCart('coffee', 'Coffee', 15.00)">
+                        <button class="btn btn-amaals" onclick="addToCart(8, 'Coffee', 15.00, '')">
                             <i class="fas fa-plus me-1"></i>Add
                         </button>
                     </div>
@@ -238,7 +238,7 @@
                         <div class="price-container">
                             <span class="h5 fw-bold">R8.00</span>
                         </div>
-                        <button class="btn btn-amaals" onclick="addToCart('water', 'Water', 8.00)">
+                        <button class="btn btn-amaals" onclick="addToCart(9, 'Water', 8.00, '')">
                             <i class="fas fa-plus me-1"></i>Add
                         </button>
                     </div>
@@ -248,4 +248,34 @@
     </div>
 </div>
 
-@* All JavaScript functionality is now handled in amaals-custom.js *@
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Category filtering
+            $('.category-btn').on('click', function() {
+                var category = $(this).data('category');
+                filterByCategory(category);
+            });
+
+            // Enhanced card hover effects
+            $(document).on('mouseenter', '.menu-item-card', function() {
+                $(this).addClass('shadow-lg');
+            }).on('mouseleave', '.menu-item-card', function() {
+                $(this).removeClass('shadow-lg');
+            });
+        });
+
+        function filterByCategory(category) {
+            if (category === 'all') {
+                $('.menu-item').fadeIn(300);
+            } else {
+                $('.menu-item').fadeOut(200);
+                $('.menu-item[data-category="' + category + '"]').fadeIn(300);
+            }
+
+            // Update active button
+            $('.category-btn').removeClass('active');
+            $('.category-btn[data-category="' + category + '"]').addClass('active');
+        }
+    </script>
+}

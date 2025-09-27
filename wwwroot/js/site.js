@@ -42,21 +42,41 @@ function filterByCategory(category) {
 }
 
 // Cart functionality
-function addToCart(id, name, price) {
-    // This would integrate with your cart system
-    console.log('Added to cart:', { id, name, price });
+// Update your existing addToCart function in site.js
+// In your site.js file - update these functions
+function addToCart(id, name, price, imageUrl = '') {
+    console.log('Adding to cart:', { id, name, price, imageUrl });
 
-    // Update cart counter
-    updateCartCounter();
+    // Make AJAX call to add item to server-side cart
+    $.post('/Orders/AddToCart', {
+        id: id,
+        name: name,
+        price: price,
+        imageUrl: imageUrl
+    }, function (response) {
+        if (response.success) {
+            // Update cart counter using your existing method
+            updateCartCounter(response.totalItems);
 
-    // Show notification
-    showNotification('success', name + ' added to cart!', 'fas fa-check-circle');
+            // Show notification
+            showNotification('success', name + ' added to cart!', 'fas fa-check-circle');
+        }
+    }).fail(function (xhr, status, error) {
+        console.error('Error adding to cart:', error);
+        // Fallback to client-side only if server call fails
+        updateCartCounter();
+        showNotification('success', name + ' added to cart!', 'fas fa-check-circle');
+    });
 }
 
 // Update cart counter
-function updateCartCounter() {
-    var currentCount = parseInt($('.badge').text()) || 0;
-    $('.badge').text(currentCount + 1);
+function updateCartCounter(count) {
+    if (count !== undefined) {
+        $('.badge').text(count);
+    } else {
+        var currentCount = parseInt($('.badge').text()) || 0;
+        $('.badge').text(currentCount + 1);
+    }
 }
 
 // Generic notification system

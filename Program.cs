@@ -1,4 +1,5 @@
 using AmaalsKitchen.Data;
+using AmaalsKitchen.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace AmaalsKitchen
@@ -14,7 +15,13 @@ namespace AmaalsKitchen
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                }));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             // Add MVC
@@ -24,10 +31,13 @@ namespace AmaalsKitchen
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(30); // Session timeout
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            // Register OrderService
+            builder.Services.AddScoped<IOrderService, OrderService>();
 
             var app = builder.Build();
 

@@ -1,0 +1,81 @@
+﻿@model List<AmaalsKitchen.Models.Order>
+@{
+    ViewData["Title"] = "My Orders - Amaals Kitchen";
+}
+
+<div class="orders-container">
+    <div class="orders-header">
+        <h1><i class="fas fa-clipboard-list me-2"></i>My Orders</h1>
+        <p>View your order history</p>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="orders-list">
+            @foreach (var order in Model)
+            {
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <h5>Order #@order.Id</h5>
+                            <p class="order-date"><i class="fas fa-calendar me-1"></i>@order.OrderDate.ToString("f")</p>
+                        </div>
+                        <div class="order-status">
+                            <span class="status-badge status-@order.Status.ToString().ToLower()">@order.Status</span>
+                        </div>
+                    </div>
+
+                    <div class="order-details">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Items:</strong> @order.OrderItems.Sum(oi => oi.Quantity)</p>
+                                <p><strong>Subtotal:</strong> R@(order.Subtotal.ToString("F2"))</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Tax:</strong> R@(order.Tax.ToString("F2"))</p>
+                                <p><strong>Total:</strong> R@(order.Total.ToString("F2"))</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-items">
+                        <h6>Order Items:</h6>
+                        <div class="order-items-list">
+                            @foreach (var item in order.OrderItems)
+                            {
+                                <div class="order-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-1">
+                                            <img src="@(item.ImageUrl ?? "/images/default-food.jpg")" alt="@item.ItemName" class="order-item-image">
+                                        </div>
+                                        <div class="col-7">
+                                            <span class="item-name">@item.ItemName</span>
+                                        </div>
+                                        <div class="col-2 text-center">
+                                            <span class="item-quantity">x@(item.Quantity)</span>
+                                        </div>
+                                        <div class="col-2 text-end">
+                                            <span class="item-price">R@((item.Price * item.Quantity).ToString("F2"))</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-orders text-center py-5">
+            <i class="fas fa-clipboard-list fa-5x text-muted mb-3"></i>
+            <h3>No orders yet</h3>
+            <p>You haven't placed any orders yet.</p>
+            <a asp-controller="Home" asp-action="Menu" class="btn btn-amaals mt-3">
+                <i class="fas fa-utensils me-2"></i>Start Shopping
+            </a>
+        </div>
+    }
+</div>
+

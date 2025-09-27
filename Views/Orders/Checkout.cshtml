@@ -1,0 +1,284 @@
+﻿@model AmaalsKitchen.Models.Cart
+@{
+    ViewData["Title"] = "Checkout - Amaals Kitchen";
+}
+
+<div class="checkout-container">
+    <div class="checkout-header">
+        <h1><i class="fas fa-shopping-cart me-2"></i>Your Order</h1>
+        <p>Review your items before placing your order</p>
+    </div>
+
+    @if (Model.Items.Any())
+    {
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="cart-items mb-4">
+                    <h3>Order Items</h3>
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="cart-item-card" data-item-id="@item.Id">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <img src="@(item.ImageUrl ?? "/images/default-food.jpg")" alt="@item.Name" class="cart-item-image">
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 class="cart-item-name">@item.Name</h5>
+                                    <p class="cart-item-price">R@(item.Price.ToString("F2")) each</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="quantity-controls">
+                                        <button class="quantity-btn minus" data-item-id="@item.Id">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <span class="quantity-display">@item.Quantity</span>
+                                        <button class="quantity-btn plus" data-item-id="@item.Id">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <p class="item-total">R@((item.Price * item.Quantity).ToString("F2"))</p>
+                                </div>
+                                <div class="col-md-1">
+                                    <button class="remove-item-btn" data-item-id="@item.Id" title="Remove item">
+                                        <i class="fas fa-trash text-danger"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="mt-3">
+                    <button id="clear-cart-btn" class="btn btn-outline-danger">
+                        <i class="fas fa-trash me-2"></i>Clear Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div class="summary-line">
+                        <span>Items (@Model.TotalItems):</span>
+                        <span id="summary-subtotal">R@(Model.Subtotal.ToString("F2"))</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Tax (15%):</span>
+                        <span id="summary-tax">R@(Model.Tax.ToString("F2"))</span>
+                    </div>
+                    <hr>
+                    <div class="summary-line total">
+                        <span>Total:</span>
+                        <span id="summary-total">R@(Model.Total.ToString("F2"))</span>
+                    </div>
+
+                    <button class="btn btn-amaals btn-lg w-100 mt-3" id="place-order-btn">
+                        <i class="fas fa-credit-card me-2"></i>Place Order
+                    </button>
+
+                    <a asp-controller="Home" asp-action="Menu" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="fas fa-utensils me-2"></i>Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-cart text-center py-5">
+            <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
+            <h3>Your cart is empty</h3>
+            <p>Add some delicious items from our menu!</p>
+            <a asp-controller="Home" asp-action="Menu" class="btn btn-amaals mt-3">
+                <i class="fas fa-utensils me-2"></i>Browse Menu
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Order Success Modal -->
+<div class="modal fade" id="orderSuccessModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>Order Placed Successfully!</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+                <h4>Thank you for your order!</h4>
+                <p>Your order has been received and is being prepared.</p>
+                <p><strong>Order ID: <span id="orderIdDisplay"></span></strong></p>
+            </div>
+            <div class="modal-footer">
+                <a asp-action="MyOrders" class="btn btn-amaals">View My Orders</a>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Return Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            console.log('Checkout page loaded');
+
+            // Quantity controls
+            $(document).on('click', '.quantity-btn.plus', function() {
+                const itemId = $(this).data('item-id');
+                console.log('Plus clicked for item:', itemId);
+                updateQuantity(itemId, 1);
+            });
+
+            $(document).on('click', '.quantity-btn.minus', function() {
+                const itemId = $(this).data('item-id');
+                console.log('Minus clicked for item:', itemId);
+                updateQuantity(itemId, -1);
+            });
+
+            // Remove item
+            $(document).on('click', '.remove-item-btn', function() {
+                const itemId = $(this).data('item-id');
+                console.log('Remove clicked for item:', itemId);
+                removeItem(itemId);
+            });
+
+            // Clear cart
+            $('#clear-cart-btn').on('click', function() {
+                console.log('Clear cart clicked');
+                if (confirm('Are you sure you want to clear your cart?')) {
+                    clearCart();
+                }
+            });
+
+            // Place order
+            $('#place-order-btn').on('click', function() {
+                console.log('Place order clicked');
+                placeOrder();
+            });
+
+            function updateQuantity(itemId, change) {
+                const currentQuantity = parseInt($(`.cart-item-card[data-item-id="${itemId}"] .quantity-display`).text());
+                const newQuantity = currentQuantity + change;
+
+                if (newQuantity < 1) return;
+
+                $.post('/Orders/UpdateQuantity', {
+                    itemId: itemId,
+                    quantity: newQuantity
+                }, function(response) {
+                    if (response.success) {
+                        console.log('Quantity updated successfully');
+                        // Update UI
+                        $(`.cart-item-card[data-item-id="${itemId}"] .quantity-display`).text(newQuantity);
+
+                        // Update item total
+                        const price = parseFloat($(`.cart-item-card[data-item-id="${itemId}"] .cart-item-price`).text().replace('R', ''));
+                        $(`.cart-item-card[data-item-id="${itemId}"] .item-total`).text('R' + (price * newQuantity).toFixed(2));
+
+                        // Update totals
+                        updateTotals(response);
+
+                        // Show notification
+                        showNotification('success', 'Cart updated successfully!', 'fas fa-check-circle');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.error('Error updating quantity:', error);
+                    showNotification('error', 'Error updating cart', 'fas fa-exclamation-circle');
+                });
+            }
+
+            function removeItem(itemId) {
+                if (confirm('Remove this item from your cart?')) {
+                    $.post('/Orders/RemoveItem', {
+                        itemId: itemId
+                    }, function(response) {
+                        if (response.success) {
+                            console.log('Item removed successfully');
+                            // Remove item from UI
+                            $(`.cart-item-card[data-item-id="${itemId}"]`).fadeOut(300, function() {
+                                $(this).remove();
+
+                                // Check if cart is empty
+                                if ($('.cart-item-card').length === 0) {
+                                    location.reload();
+                                }
+                            });
+
+                            // Update totals
+                            updateTotals(response);
+
+                            // Show notification
+                            showNotification('success', 'Item removed from cart', 'fas fa-check-circle');
+                        }
+                    }).fail(function(xhr, status, error) {
+                        console.error('Error removing item:', error);
+                        showNotification('error', 'Error removing item', 'fas fa-exclamation-circle');
+                    });
+                }
+            }
+
+            function clearCart() {
+                $.post('/Orders/ClearCart', function(response) {
+                    console.log('Cart cleared successfully');
+                    location.reload();
+                }).fail(function(xhr, status, error) {
+                    console.error('Error clearing cart:', error);
+                    showNotification('error', 'Error clearing cart', 'fas fa-exclamation-circle');
+                });
+            }
+
+            function placeOrder() {
+                $('#place-order-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Placing Order...');
+
+                $.post('/Orders/PlaceOrder', function(response) {
+                    console.log('Place order response:', response);
+                    if (response.success) {
+                        $('#orderIdDisplay').text(response.orderId);
+                        $('#orderSuccessModal').modal('show');
+                    } else {
+                        showNotification('error', response.message, 'fas fa-exclamation-circle');
+                        $('#place-order-btn').prop('disabled', false).html('<i class="fas fa-credit-card me-2"></i>Place Order');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.error('Error placing order:', error);
+                    showNotification('error', 'Error placing order. Please try again.', 'fas fa-exclamation-circle');
+                    $('#place-order-btn').prop('disabled', false).html('<i class="fas fa-credit-card me-2"></i>Place Order');
+                });
+            }
+
+            function updateTotals(response) {
+                console.log('Updating totals:', response);
+                $('#summary-subtotal').text('R' + response.subtotal.toFixed(2));
+                $('#summary-tax').text('R' + response.tax.toFixed(2));
+                $('#summary-total').text('R' + response.total.toFixed(2));
+                $('.summary-line:contains("Items") span:first').text('Items (' + response.totalItems + '):');
+
+                // Update cart badge
+                updateCartCounter(response.totalItems);
+            }
+
+            function updateCartCounter(count) {
+                console.log('Updating cart counter to:', count);
+                $('.badge').text(count);
+            }
+
+            function showNotification(type, message, icon) {
+                console.log('Showing notification:', type, message);
+                const alertClass = `alert-${type}`;
+                const notification = $(`<div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 90px; right: 20px; z-index: 9999; min-width: 300px;">
+                    <i class="${icon} me-2"></i>${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`);
+
+                $('body').append(notification);
+
+                setTimeout(function() {
+                    notification.alert('close');
+                }, 3000);
+            }
+        });
+    </script>
+}
