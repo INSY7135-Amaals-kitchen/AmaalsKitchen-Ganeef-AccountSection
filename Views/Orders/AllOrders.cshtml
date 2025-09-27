@@ -1,0 +1,37 @@
+﻿@model List<AmaalsKitchen.Models.Order>
+
+<h1>All Orders</h1>
+
+@if (Model.Any())
+{
+    <div class="orders-list">
+        @foreach (var order in Model)
+        {
+            <div class="order-card">
+                <div class="order-header">
+                    <h5>Order #@order.Id</h5>
+                    <p>@order.OrderDate.ToString("f")</p>
+                    <p>User: @(order.User?.Email ?? "Guest")</p>
+                </div>
+
+                <div class="order-details">
+                    <p>Subtotal: R@(order.Subtotal.ToString("F2"))</p>
+                    <p>Tax: R@(order.Tax.ToString("F2"))</p>
+                    <p>Total: R@(order.Total.ToString("F2"))</p>
+                </div>
+
+                <div class="order-items">
+                    <h6>Items:</h6>
+                    @foreach (var item in order.OrderItems)
+                    {
+                        <p>@item.ItemName x @item.Quantity - R@((item.Price * item.Quantity).ToString("F2"))</p>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No orders found.</p>
+}

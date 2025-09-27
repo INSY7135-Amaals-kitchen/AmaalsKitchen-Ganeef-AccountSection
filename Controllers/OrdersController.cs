@@ -1,8 +1,9 @@
-﻿// Controllers/OrdersController.cs
+﻿using AmaalsKitchen.Data;
 using AmaalsKitchen.Models;
 using AmaalsKitchen.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,14 +13,28 @@ namespace AmaalsKitchen.Controllers
     public class OrdersController : Controller
     {
         private readonly IOrderService _orderService;
-
-        public OrdersController(IOrderService orderService)
+        private readonly ApplicationDbContext _context;
+        public OrdersController(IOrderService orderService, ApplicationDbContext context)
         {
             _orderService = orderService;
+            _context = context;
         }
 
         public IActionResult Checkout()
         {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                TempData["ErrorMessage"] = "Please log in to proceed to checkout.";
+                return RedirectToAction("Login", "Account"); 
+            }
+            if (userRole == "Admin")
+            {
+                TempData["ErrorMessage"] = "Admins are not allowed to place orders.";
+                return RedirectToAction("AdminDashboard", "Admins"); 
+            }
+
             var cart = GetCartFromSession();
             return View(cart);
         }
@@ -36,12 +51,27 @@ namespace AmaalsKitchen.Controllers
                     return Json(new { success = false, message = "Cart is empty" });
                 }
 
-                // Create new order with just the cart items
+                // Get the logged-in user's email from session
+                var userEmail = HttpContext.Session.GetString("UserEmail");
+                int? userId = null;
+
+                if (!string.IsNullOrEmpty(userEmail))
+                {
+                    // Assuming you have a DbContext _context for Users
+                    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+                    if (user != null)
+                    {
+                        userId = user.Id;
+                    }
+                }
+
+                // Create new order with the cart items
                 var order = new Order
                 {
                     Subtotal = cart.Subtotal,
                     Tax = cart.Tax,
                     Total = cart.Total,
+                    UserId = userId, // <-- assign the logged-in user's ID
                     OrderItems = cart.Items.Select(item => new OrderItem
                     {
                         ItemName = item.Name,
@@ -66,7 +96,6 @@ namespace AmaalsKitchen.Controllers
             }
             catch (Exception ex)
             {
-                // Log the error
                 Console.WriteLine($"Error placing order: {ex.Message}");
                 return Json(new
                 {
@@ -76,17 +105,57 @@ namespace AmaalsKitchen.Controllers
             }
         }
 
+
         public async Task<IActionResult> MyOrders()
         {
             try
             {
-                var orders = await _orderService.GetAllOrdersAsync();
+                // Get the logged-in user's email from session
+                var userEmail = HttpContext.Session.GetString("UserEmail");
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    TempData["ErrorMessage"] = "Please log in to view your orders.";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Find the user's ID
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+                if (user == null)
+                {
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Get only orders for this user
+                var orders = await _context.Orders
+                                           .Include(o => o.OrderItems)
+                                           .Where(o => o.UserId == user.Id)
+                                           .ToListAsync();
+
                 return View(orders);
             }
             catch (Exception ex)
             {
-                // Log error and return empty list
                 Console.WriteLine($"Error retrieving orders: {ex.Message}");
+                return View(new List<Order>());
+            }
+        }
+        public async Task<IActionResult> AllOrders()
+        {
+            try
+            {
+                // Get all orders and include User for display purposes
+                var orders = await _context.Orders
+                    .Include(o => o.User) // Include related User info
+                    .Include(o => o.OrderItems) // Include items in the order
+                    .OrderByDescending(o => o.OrderDate) // Optional: newest first
+                    .ToListAsync();
+
+                return View(orders); // Pass to view
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving all orders: {ex.Message}");
                 return View(new List<Order>());
             }
         }

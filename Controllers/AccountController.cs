@@ -32,20 +32,33 @@ namespace AmaalsKitchen.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Hardcoded Admin check first
+                if (model.Email == "admin@amaalskitchen.com" && model.Password == "Admin123")
+                {
+                    HttpContext.Session.SetString("UserEmail", model.Email);
+                    HttpContext.Session.SetString("UserName", "Admin");
+                    HttpContext.Session.SetString("UserRole", "Admin");
+
+                    TempData["SuccessMessage"] = "Welcome Admin!";
+                    return RedirectToAction("AdminDashboard", "Admins");
+                }
+
+              
                 var user = _context.Users.FirstOrDefault(u => u.Email == model.Email);
                 if (user != null)
                 {
-                    // verify hash
                     var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
 
                     if (result == PasswordVerificationResult.Success)
                     {
-                        // update last login
                         user.LastLoginDate = DateTime.UtcNow;
                         _context.SaveChanges();
 
                         HttpContext.Session.SetString("UserEmail", user.Email);
                         HttpContext.Session.SetString("UserName", user.FirstName);
+
+                        
+                        HttpContext.Session.SetString("UserRole", "User");
 
                         TempData["SuccessMessage"] = "Login successful!";
                         return RedirectToAction("Index", "Home");
@@ -57,6 +70,7 @@ namespace AmaalsKitchen.Controllers
 
             return View(model);
         }
+
 
         // ===================== REGISTER =====================
         [HttpGet]

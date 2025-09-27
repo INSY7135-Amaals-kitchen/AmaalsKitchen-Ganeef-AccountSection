@@ -11,6 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+@{
+        var role = Context.Session.GetString("UserRole")?? "User";
+}
 <body>
     <!-- Success/Error/Info Messages -->
     @if (TempData["SuccessMessage"] != null)
@@ -52,37 +55,57 @@
 
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
-                                <i class="fas fa-home me-1"></i>Home
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Menu">
-                                <i class="fas fa-utensils me-1"></i>Menu
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Orders" asp-action="MyOrders">
-                                <i class="fas fa-shopping-cart me-1"></i>Orders
-                                
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">
-                                <i class="fas fa-info-circle me-1"></i>About
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">
-                                <i class="fas fa-phone me-1"></i>Contact
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Location">
+                          @if (role == "User")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                                    <i class="fas fa-home me-1"></i>Home
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Menu">
+                                    <i class="fas fa-utensils me-1"></i>Menu
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Orders" asp-action="MyOrders">
+                                    <i class="fas fa-shopping-cart me-1"></i>Orders
+
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">
+                                    <i class="fas fa-info-circle me-1"></i>About
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">
+                                    <i class="fas fa-phone me-1"></i>Contact
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Location">
                                 <i class="fas fa-map-marker-alt me-1"></i>Location
                             </a>
-                        </li>
+                        </li>}
+                        @if (role == "Admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Admins" asp-action="AdminDashboard">
+                                    <i class="fas fa-home me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Admins" asp-action="AddProducts">
+                                    <i class="fas fa-plus me-1"></i>AddProducts
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Orders" asp-action="AllOrders">
+                                    <i class="fas fa-inbox me-1"></i>All orders
+                                </a>
+                            </li>
+ }
                     </ul>
 
                     <!-- Account Dropdown -->

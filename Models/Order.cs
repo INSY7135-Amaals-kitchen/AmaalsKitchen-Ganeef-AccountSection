@@ -1,5 +1,4 @@
-﻿// Models/Order.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,8 +12,11 @@ namespace AmaalsKitchen.Models
         public decimal Subtotal { get; set; }
         public decimal Tax { get; set; }
         public decimal Total { get; set; }
+        public int? UserId { get; set; }
 
         // Navigation property
+        public User User { get; set; }
+
         public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 

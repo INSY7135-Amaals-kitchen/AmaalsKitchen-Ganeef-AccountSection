@@ -29,6 +29,12 @@ namespace AmaalsKitchen.Data
                       .WithOne(e => e.Order)
                       .HasForeignKey(e => e.OrderId)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                // Relationship with User
+                entity.HasOne(e => e.User)
+                      .WithMany() // or add a navigation property in User if you want
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.SetNull); // safe for existing orders
             });
 
             // Configure OrderItem entity
@@ -40,5 +46,6 @@ namespace AmaalsKitchen.Data
                 entity.Property(e => e.ImageUrl).HasMaxLength(500);
             });
         }
+
     }
 }
