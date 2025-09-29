@@ -1,3 +1,59 @@
-﻿@{
-    ViewData["Title"] = "Admin Dashboard - Amaals Kitchen";
-}
+﻿@model AmaalsKitchen.Models.DashboardViewModel
+
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+
+    <table class="table table-bordered mt-3">
+        <thead style="background-color: #C41E3A; color: white;">
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Total Revenue</td>
+                <td>R @Model.TotalRevenue</td>
+            </tr>
+            <tr>
+                <td>Total Orders</td>
+                <td>@Model.TotalOrders</td>
+            </tr>
+            <tr>
+                <td>Average Order Value</td>
+                <td>R @Model.AverageOrderValue</td>
+            </tr>
+            <tr>
+                <td>Most Bought Item</td>
+                <td>@Model.MostBoughtItem (@Model.MostBoughtCount times)</td>
+            </tr>
+            <tr>
+                <td>Total Customers</td>
+                <td>@Model.TotalCustomers</td>
+            </tr>
+            <tr>
+                <td>Top Customer</td>
+                <td>@Model.TopCustomer (R @Model.TopCustomerSpend spent)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="mt-4">Top 5 Best Selling Products</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity Sold</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.Top5Products)
+            {
+                <tr>
+                    <td>@p.ProductName</td>
+                    <td>@p.Quantity</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -11,6 +11,7 @@ namespace AmaalsKitchen.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,7 +46,20 @@ namespace AmaalsKitchen.Data
                 entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.ImageUrl).HasMaxLength(500);
             });
+
+            // Configure Product entity
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+                // Configure other properties as needed
+            });
         }
 
+        public List<Product> GetAllProducts()
+        {
+            return Products.ToList();
+        }
     }
 }
