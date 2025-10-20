@@ -118,10 +118,10 @@ namespace AmaalsKitchen.Controllers
             Console.WriteLine("Redirecting to AddProducts at " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             return RedirectToAction("AddProducts");
         }
-    
 
-// ========================= DASHBOARD =========================
-public IActionResult AdminDashboard()
+
+        // ========================= DASHBOARD =========================
+        public IActionResult AdminDashboard()
         {
             var orders = _context.Orders
                 .Include(o => o.OrderItems)

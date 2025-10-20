@@ -1,37 +1,256 @@
-﻿@model List<AmaalsKitchen.Models.Order>
-
-<h1>All Orders</h1>
-
-@if (Model.Any())
-{
-    <div class="orders-list">
-        @foreach (var order in Model)
-        {
-            <div class="order-card">
-                <div class="order-header">
-                    <h5>Order #@order.Id</h5>
-                    <p>@order.OrderDate.ToString("f")</p>
-                    <p>User: @(order.User?.Email ?? "Guest")</p>
-                </div>
-
-                <div class="order-details">
-                    <p>Subtotal: R@(order.Subtotal.ToString("F2"))</p>
-                    <p>Tax: R@(order.Tax.ToString("F2"))</p>
-                    <p>Total: R@(order.Total.ToString("F2"))</p>
-                </div>
-
-                <div class="order-items">
-                    <h6>Items:</h6>
-                    @foreach (var item in order.OrderItems)
-                    {
-                        <p>@item.ItemName x @item.Quantity - R@((item.Price * item.Quantity).ToString("F2"))</p>
-                    }
-                </div>
-            </div>
-        }
-    </div>
+﻿   
+@model List<AmaalsKitchen.Models.Order>
+@{
+    ViewData["Title"] = "All Orders - Admin";
 }
-else
-{
-    <p>No orders found.</p>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-tasks me-2"></i>All Orders Management</h2>
+            <p class="text-muted">Manage all customer orders</p>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+            <span class="badge bg-primary ms-2">Total: @Model.Count</span>
+        </div>
+    </div>
+    <!-- 📅 Date Filter Section -->
+    <form method="get" asp-action="AllOrders" class="row g-3 mb-3">
+        <div class="col-md-3">
+            <select name="filterType" id="filterType" class="form-select" onchange="onFilterChange()">
+                <option value="">-- Filter by Date --</option>
+                <option value="today" selected="@(Context.Request.Query["filterType"] == "today")">Today</option>
+                <option value="last10days" selected="@(Context.Request.Query["filterType"] == "last10days")">Last 10 Days</option>
+                <option value="specific" selected="@(Context.Request.Query["filterType"] == "specific")">Specific Date</option>
+            </select>
+        </div>
+
+        <div class="col-md-3" id="specificDateContainer" style="display:@(Context.Request.Query["filterType"] == "specific" ? "block" : "none")">
+            <input type="date" name="specificDate" class="form-control"
+                   value="@(Context.Request.Query["specificDate"])" />
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-filter me-1"></i> Apply
+            </button>
+        </div>
+
+        <div class="col-md-2">
+            <a asp-action="AllOrders" class="btn btn-secondary w-100">
+                <i class="fas fa-times me-1"></i> Reset
+            </a>
+        </div>
+    </form>
+
+    <!-- Order Status Filter -->
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-secondary filter-btn active" data-status="all">
+                All (@Model.Count)
+            </button>
+            <button type="button" class="btn btn-outline-warning filter-btn" data-status="pending">
+                Pending (@Model.Count(o => o.Status == OrderStatus.Pending))
+            </button>
+            <button type="button" class="btn btn-outline-info filter-btn" data-status="preparing">
+                Preparing (@Model.Count(o => o.Status == OrderStatus.Preparing))
+            </button>
+            <button type="button" class="btn btn-outline-success filter-btn" data-status="readyforpickup">
+                Ready (@Model.Count(o => o.Status == OrderStatus.ReadyForPickup))
+            </button>
+            <button type="button" class="btn btn-outline-primary filter-btn" data-status="completed">
+                Completed (@Model.Count(o => o.Status == OrderStatus.Completed))
+            </button>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="orders-grid">
+            @foreach (var order in Model)
+            {
+                <div class="admin-order-card" data-status="@order.Status.ToString().ToLower()">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center"
+                             style="background-color: @GetStatusColor(order.Status); color: white;">
+                            <div>
+                                <h5 class="mb-0">Order #@order.Id</h5>
+                                <small>@order.OrderDate.ToString("MMM dd, yyyy hh:mm tt")</small>
+                            </div>
+                            <span class="badge bg-light text-dark">
+                                @order.StatusDisplay
+                            </span>
+                        </div>
+
+                       
+
+                        <div class="card-body">
+                            <!-- Customer Info -->
+                            <div class="customer-info mb-3">
+                                <h6><i class="fas fa-user me-2"></i>Customer</h6>
+                                <p class="mb-1">
+                                    <strong>@(order.User != null ? order.User.FirstName + " " + order.User.LastName : "Guest")</strong>
+                                </p>
+                                @if (order.User != null)
+                                {
+                                    <small class="text-muted">
+                                        <i class="fas fa-envelope me-1"></i>@order.User.Email<br>
+                                        <i class="fas fa-phone me-1"></i>@order.User.PhoneNumber
+                                    </small>
+                                }
+                            </div>
+
+                            <!-- Pickup Time Info -->
+                            <div class="pickup-time-section mb-3 p-2"
+                                 style="background-color: @(order.IsReadyForPickup ? "#d4edda" : "#fff3cd"); border-radius: 8px;">
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-clock me-1"></i>Estimated Pickup
+                                </small>
+                                <strong style="color: @(order.IsReadyForPickup ? "#155724" : "#856404");">
+                                    @order.EstimatedPickupTime.ToString("hh:mm tt")
+                                </strong>
+                                @if (!order.IsReadyForPickup && order.Status != OrderStatus.Completed)
+                                {
+                                    <span class="badge bg-warning text-dark ms-2">
+                                        @order.TimeUntilPickup
+                                    </span>
+                                }
+                            </div>
+
+                            <!-- Order Items Summary -->
+                            <div class="order-summary mb-3">
+                                <h6><i class="fas fa-shopping-bag me-2"></i>Items (@order.OrderItems.Sum(i => i.Quantity))</h6>
+                                <div class="order-items-compact">
+                                    @foreach (var item in order.OrderItems)
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-truncate" style="max-width: 180px;">
+                                                @item.ItemName x @item.Quantity
+                                            </span>
+                                            <span class="text-muted">R@((item.Price * item.Quantity).ToString("F2"))</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Special Instructions -->
+                            @if (!string.IsNullOrEmpty(order.Notes))
+                            {
+                                <div class="alert alert-info py-2 mb-3">
+                                    <small>
+                                        <strong><i class="fas fa-sticky-note me-1"></i>Note:</strong><br>
+                                        @order.Notes
+                                    </small>
+                                </div>
+                            }
+
+                            <!-- Total -->
+                            <div class="order-total mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Subtotal:</span>
+                                    <span>@("R" + order.Subtotal.ToString("F2"))</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted">
+                                    <span>Tax:</span>
+                                    <span>@("R" + order.Tax.ToString("F2"))</span>
+                                </div>
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Total:</strong>
+                                    <strong style="color: var(--amaals-red);">
+                                        @("R" + order.Total.ToString("F2"))
+                                    </strong>
+                                </div>
+                            </div>
+                            
+
+
+
+                            <!-- Status Update Buttons (ADMIN ONLY) -->
+                            <div class="status-actions">
+                                @if (order.Status == OrderStatus.Pending)
+                                {
+                                    <button class="btn btn-sm btn-info w-100 mb-2"
+                                            onclick="updateStatus(@order.Id, @((int)OrderStatus.Preparing))">
+                                        <i class="fas fa-fire me-1"></i>Start Preparing
+                                    </button>
+                                }
+                                @if (order.Status == OrderStatus.Preparing)
+                                {
+                                    <button class="btn btn-sm btn-success w-100 mb-2"
+                                            onclick="updateStatus(@order.Id, @((int)OrderStatus.ReadyForPickup))">
+                                        <i class="fas fa-check-circle me-1"></i>Mark as Ready
+                                    </button>
+                                }
+                                @if (order.Status == OrderStatus.ReadyForPickup)
+                                {
+                                    <button class="btn btn-sm btn-primary w-100 mb-2"
+                                            onclick="updateStatus(@order.Id, @((int)OrderStatus.Completed))">
+                                        <i class="fas fa-smile me-1"></i>Mark as Completed
+                                    </button>
+                                }
+                                @if (order.Status != OrderStatus.Completed && order.Status != OrderStatus.Cancelled)
+                                {
+                                    <button class="btn btn-sm btn-outline-danger w-100"
+                                            onclick="updateStatus(@order.Id, @((int)OrderStatus.Cancelled))">
+                                        <i class="fas fa-times me-1"></i>Cancel Order
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="card-footer text-muted text-center">
+                            <small>
+                                @if (order.ActualPickupTime.HasValue)
+                                {
+                                    <span>Picked up: @order.ActualPickupTime.Value.ToString("hh:mm tt")</span>
+                                }
+                                else
+                                {
+                                    <span>Order placed @((DateTime.Now - order.OrderDate).TotalMinutes.ToString("F0")) min ago</span>
+                                }
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle fa-3x mb-3"></i>
+            <h4>No orders yet</h4>
+            <p>Orders will appear here once customers start placing them.</p>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusColor(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "#ffc107",
+            OrderStatus.Preparing => "#17a2b8",
+            OrderStatus.ReadyForPickup => "#28a745",
+            OrderStatus.Completed => "#007bff",
+            OrderStatus.Cancelled => "#dc3545",
+            _ => "#6c757d"
+        };
+    }
+}
+<form id="statusForm">
+    @Html.AntiForgeryToken()
+</form>
+
+
+@section Scripts {
+    <!-- Reference external JS file -->
+    <script src="~/js/site.jsjs" asp-append-version="true"></script>
+
+  
 }

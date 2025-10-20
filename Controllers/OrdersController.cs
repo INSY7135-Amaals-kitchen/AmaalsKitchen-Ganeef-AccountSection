@@ -1,4 +1,5 @@
-﻿using AmaalsKitchen.Data;
+﻿
+using AmaalsKitchen.Data;
 using AmaalsKitchen.Models;
 using AmaalsKitchen.Services;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,7 @@ namespace AmaalsKitchen.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly ApplicationDbContext _context;
+
         public OrdersController(IOrderService orderService, ApplicationDbContext context)
         {
             _orderService = orderService;
@@ -24,23 +26,33 @@ namespace AmaalsKitchen.Controllers
         {
             var userEmail = HttpContext.Session.GetString("UserEmail");
             var userRole = HttpContext.Session.GetString("UserRole");
+
             if (string.IsNullOrEmpty(userEmail))
             {
                 TempData["ErrorMessage"] = "Please log in to proceed to checkout.";
-                return RedirectToAction("Login", "Account"); 
+                return RedirectToAction("Login", "Account");
             }
+
             if (userRole == "Admin")
             {
                 TempData["ErrorMessage"] = "Admins are not allowed to place orders.";
-                return RedirectToAction("AdminDashboard", "Admins"); 
+                return RedirectToAction("AdminDashboard", "Admins");
             }
 
             var cart = GetCartFromSession();
+
+            // NEW: Validate cart is not empty
+            if (!cart.Items.Any())
+            {
+                TempData["ErrorMessage"] = "Your cart is empty. Please add items before checkout.";
+                return RedirectToAction("Menu", "Home");
+            }
+
             return View(cart);
         }
 
         [HttpPost]
-        public async Task<IActionResult> PlaceOrder()
+        public async Task<IActionResult> PlaceOrder(string notes = "")
         {
             try
             {
@@ -51,13 +63,11 @@ namespace AmaalsKitchen.Controllers
                     return Json(new { success = false, message = "Cart is empty" });
                 }
 
-                // Get the logged-in user's email from session
                 var userEmail = HttpContext.Session.GetString("UserEmail");
                 int? userId = null;
 
                 if (!string.IsNullOrEmpty(userEmail))
                 {
-                    // Assuming you have a DbContext _context for Users
                     var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
                     if (user != null)
                     {
@@ -65,13 +75,21 @@ namespace AmaalsKitchen.Controllers
                     }
                 }
 
-                // Create new order with the cart items
+                // NEW: Calculate preparation time based on items (more items = more time)
+                int prepTime = CalculatePreparationTime(cart.Items.Count);
+
+                // Create new order with estimated pickup time
                 var order = new Order
                 {
                     Subtotal = cart.Subtotal,
                     Tax = cart.Tax,
                     Total = cart.Total,
-                    UserId = userId, // <-- assign the logged-in user's ID
+                    UserId = userId,
+                    OrderDate = DateTime.Now,
+                    Status = OrderStatus.Pending,
+                    PreparationTimeMinutes = prepTime,
+                    EstimatedPickupTime = DateTime.Now.AddMinutes(prepTime),
+                    Notes = notes,
                     OrderItems = cart.Items.Select(item => new OrderItem
                     {
                         ItemName = item.Name,
@@ -91,7 +109,9 @@ namespace AmaalsKitchen.Controllers
                 {
                     success = true,
                     message = "Order placed successfully!",
-                    orderId = createdOrder.Id
+                    orderId = createdOrder.Id,
+                    estimatedPickupTime = createdOrder.EstimatedPickupTime.ToString("hh:mm tt"),
+                    preparationTime = prepTime
                 });
             }
             catch (Exception ex)
@@ -105,12 +125,23 @@ namespace AmaalsKitchen.Controllers
             }
         }
 
+        // NEW: Calculate preparation time based on order complexity
+        private int CalculatePreparationTime(int itemCount)
+        {
+            // Base time: 15 minutes
+            // Additional 5 minutes per item after the first
+            int baseTime = 15;
+            int additionalTime = Math.Max(0, (itemCount - 1) * 5);
+            int totalTime = baseTime + additionalTime;
+
+            // Cap at 45 minutes maximum
+            return Math.Min(totalTime, 45);
+        }
 
         public async Task<IActionResult> MyOrders()
         {
             try
             {
-                // Get the logged-in user's email from session
                 var userEmail = HttpContext.Session.GetString("UserEmail");
                 if (string.IsNullOrEmpty(userEmail))
                 {
@@ -118,7 +149,6 @@ namespace AmaalsKitchen.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Find the user's ID
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
                 if (user == null)
                 {
@@ -126,11 +156,11 @@ namespace AmaalsKitchen.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Get only orders for this user
                 var orders = await _context.Orders
-                                           .Include(o => o.OrderItems)
-                                           .Where(o => o.UserId == user.Id)
-                                           .ToListAsync();
+                    .Include(o => o.OrderItems)
+                    .Where(o => o.UserId == user.Id)
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToListAsync();
 
                 return View(orders);
             }
@@ -140,18 +170,44 @@ namespace AmaalsKitchen.Controllers
                 return View(new List<Order>());
             }
         }
-        public async Task<IActionResult> AllOrders()
+
+        public async Task<IActionResult> AllOrders(string filterType, DateTime? specificDate)
         {
             try
             {
-                // Get all orders and include User for display purposes
-                var orders = await _context.Orders
-                    .Include(o => o.User) // Include related User info
-                    .Include(o => o.OrderItems) // Include items in the order
-                    .OrderByDescending(o => o.OrderDate) // Optional: newest first
+                var ordersQuery = _context.Orders
+                    .Include(o => o.User)
+                    .Include(o => o.OrderItems)
+                    .AsQueryable();
+
+                // ✅ Apply date filters if selected
+                if (!string.IsNullOrEmpty(filterType))
+                {
+                    switch (filterType.ToLower())
+                    {
+                        case "today":
+                            ordersQuery = ordersQuery.Where(o => o.OrderDate.Date == DateTime.Today);
+                            break;
+
+                        case "last10days":
+                            var fromDate = DateTime.Today.AddDays(-10);
+                            ordersQuery = ordersQuery.Where(o => o.OrderDate.Date >= fromDate && o.OrderDate.Date <= DateTime.Today);
+                            break;
+
+                        case "specific":
+                            if (specificDate.HasValue)
+                            {
+                                ordersQuery = ordersQuery.Where(o => o.OrderDate.Date == specificDate.Value.Date);
+                            }
+                            break;
+                    }
+                }
+
+                var orders = await ordersQuery
+                    .OrderByDescending(o => o.OrderDate)
                     .ToListAsync();
 
-                return View(orders); // Pass to view
+                return View(orders);
             }
             catch (Exception ex)
             {
@@ -160,7 +216,84 @@ namespace AmaalsKitchen.Controllers
             }
         }
 
-        // ... Keep the rest of your existing methods (UpdateQuantity, RemoveItem, etc.)
+        // NEW: Admin action to update order status
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, OrderStatus newStatus)
+        {
+            try
+            {
+                // Check if user is admin
+                var userRole = HttpContext.Session.GetString("UserRole");
+                if (userRole != "Admin")
+                {
+                    return Json(new { success = false, message = "Unauthorized" });
+                }
+
+                var order = await _context.Orders.FindAsync(orderId);
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Order not found" });
+                }
+
+                order.Status = newStatus;
+
+                // If marking as completed, record actual pickup time
+                if (newStatus == OrderStatus.Completed)
+                {
+                    order.ActualPickupTime = DateTime.Now;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Order #{orderId} status updated to {newStatus}",
+                    newStatus = order.StatusDisplay
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating order status: {ex.Message}");
+                return Json(new { success = false, message = "Error updating status" });
+            }
+        }
+
+        // NEW: Get order details (for admin/user)
+        public async Task<IActionResult> OrderDetails(int id)
+        {
+            try
+            {
+                var order = await _context.Orders
+                    .Include(o => o.User)
+                    .Include(o => o.OrderItems)
+                    .FirstOrDefaultAsync(o => o.Id == id);
+
+                if (order == null)
+                {
+                    TempData["ErrorMessage"] = "Order not found.";
+                    return RedirectToAction("MyOrders");
+                }
+
+                // Check if user has permission to view this order
+                var userEmail = HttpContext.Session.GetString("UserEmail");
+                var userRole = HttpContext.Session.GetString("UserRole");
+
+                if (userRole != "Admin" && order.User?.Email != userEmail)
+                {
+                    TempData["ErrorMessage"] = "You don't have permission to view this order.";
+                    return RedirectToAction("MyOrders");
+                }
+
+                return View(order);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving order details: {ex.Message}");
+                TempData["ErrorMessage"] = "Error loading order details.";
+                return RedirectToAction("MyOrders");
+            }
+        }
 
         [HttpPost]
         public IActionResult UpdateQuantity(int itemId, int quantity)
@@ -251,12 +384,10 @@ namespace AmaalsKitchen.Controllers
 
                 if (existingItem != null)
                 {
-                    // Item already exists, increase quantity
                     existingItem.Quantity += 1;
                 }
                 else
                 {
-                    // Add new item
                     cart.Items.Add(new CartItem
                     {
                         Id = id,
@@ -275,7 +406,7 @@ namespace AmaalsKitchen.Controllers
                     success = true,
                     totalItems = cart.TotalItems,
                     cartItemCount = cart.Items.Count,
-                    items = cart.Items // Return items for debugging
+                    items = cart.Items
                 });
             }
             catch (Exception ex)

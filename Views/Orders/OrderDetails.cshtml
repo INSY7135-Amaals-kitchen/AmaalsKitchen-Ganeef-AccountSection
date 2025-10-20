@@ -1,0 +1,138 @@
+﻿@model AmaalsKitchen.Models.Order
+@{
+    ViewData["Title"] = $"Order #{Model.Id} Details";
+}
+
+<div class="container my-4">
+    <div class="row mb-3 no-print">
+        <div class="col">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print me-2"></i>Print Receipt
+            </button>
+            <a asp-action="MyOrders" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Orders
+            </a>
+        </div>
+    </div>
+
+    <!-- Printable Receipt -->
+    <div class="receipt-container">
+        <!-- Header -->
+        <div class="receipt-header text-center mb-4">
+            <img src="~/Images/amaals kitchen.jpg" alt="Amaals Kitchen" class="receipt-logo mb-3">
+            <h2 style="color: var(--amaals-red); font-weight: 700;">Amaals Kitchen</h2>
+            <p class="mb-1">123 Main Street, Cape Town, 8000</p>
+            <p class="mb-1">Tel: +27 12 345 6789</p>
+            <p class="mb-3">Email: info@amaals.com</p>
+            <hr>
+        </div>
+
+        <!-- Order Information -->
+        <div class="receipt-info mb-4">
+            <div class="row">
+                <div class="col-6">
+                    <h4>ORDER RECEIPT</h4>
+                    <p class="mb-1"><strong>Order #:</strong> @Model.Id</p>
+                    <p class="mb-1"><strong>Date:</strong> @Model.OrderDate.ToString("dd MMM yyyy")</p>
+                    <p class="mb-1"><strong>Time:</strong> @Model.OrderDate.ToString("hh:mm tt")</p>
+                </div>
+                <div class="col-6 text-end">
+                    <div class="status-badge-large status-@Model.Status.ToString().ToLower()">
+                        @Model.StatusDisplay
+                    </div>
+                    @if (Model.Status != OrderStatus.Completed && Model.Status != OrderStatus.Cancelled)
+                    {
+                        <div class="mt-3">
+                            <p class="mb-1"><strong>Estimated Pickup:</strong></p>
+                            <h4 style="color: var(--amaals-red);">@Model.EstimatedPickupTime.ToString("hh:mm tt")</h4>
+                            <p class="text-muted">(@Model.TimeUntilPickup)</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Information -->
+        @if (Model.User != null)
+        {
+            <div class="customer-section mb-4">
+                <h5>Customer Information</h5>
+                <div class="info-box">
+                    <p class="mb-1"><strong>Name:</strong> @Model.User.FirstName @Model.User.LastName</p>
+                    <p class="mb-1"><strong>Email:</strong> @Model.User.Email</p>
+                    <p class="mb-0"><strong>Phone:</strong> @Model.User.PhoneNumber</p>
+                </div>
+            </div>
+        }
+
+        <!-- Special Instructions -->
+        @if (!string.IsNullOrEmpty(Model.Notes))
+        {
+            <div class="notes-section mb-4">
+                <h5>Special Instructions</h5>
+                <div class="info-box bg-warning bg-opacity-10">
+                    <p class="mb-0">@Model.Notes</p>
+                </div>
+            </div>
+        }
+
+        <!-- Order Items -->
+        <div class="items-section mb-4">
+            <h5>Order Items</h5>
+            <table class="table table-bordered">
+                <thead style="background-color: var(--amaals-red); color: white;">
+                    <tr>
+                        <th>Item</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Price</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        <tr>
+                            <td>@item.ItemName</td>
+                            <td class="text-center">@item.Quantity</td>
+                            <td class="text-end">R@item.Price.ToString("F2")</td>
+                            <td class="text-end">R@((item.Price * item.Quantity).ToString("F2"))</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                        <td class="text-end">R@Model.Subtotal.ToString("F2")</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Tax (15%):</strong></td>
+                        <td class="text-end">R@Model.Tax.ToString("F2")</td>
+                    </tr>
+                    <tr style="background-color: var(--amaals-cream);">
+                        <td colspan="3" class="text-end"><h5 class="mb-0">TOTAL:</h5></td>
+                        <td class="text-end"><h5 class="mb-0" style="color: var(--amaals-red);">R@Model.Total.ToString("F2")</h5></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="receipt-footer text-center mt-5">
+            <hr>
+            <p class="mb-2"><strong>Thank you for choosing Amaals Kitchen!</strong></p>
+            <p class="text-muted mb-1">Please present this receipt when collecting your order</p>
+            <p class="text-muted">For any queries, contact us at +27 12 345 6789</p>
+            <div class="mt-3">
+                <small class="text-muted">Established 1997 | Serving authentic flavors for over 25 years</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // Optional: Auto-print when page loads (can be removed)
+        // window.onload = function() { window.print(); }
+    </script>
+}
