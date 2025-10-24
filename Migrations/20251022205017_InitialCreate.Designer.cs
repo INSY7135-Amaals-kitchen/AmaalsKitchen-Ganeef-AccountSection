@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AmaalsKitchen.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250928210759_DescriptionNullable")]
-    partial class DescriptionNullable
+    [Migration("20251022205017_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,8 +33,21 @@ namespace AmaalsKitchen.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ActualPickupTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EstimatedPickupTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("PreparationTimeMinutes")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
