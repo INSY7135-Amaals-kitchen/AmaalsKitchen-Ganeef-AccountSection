@@ -1,0 +1,47 @@
+﻿@{
+    ViewData["Title"] = "Contact";
+}
+
+<div class="main-content" style="justify-content: center; align-items: center; padding: 4rem 2rem;">
+    <div style="background: rgba(255, 255, 255, 0.95); padding: 3rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); max-width: 600px; width: 100%;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <img src="~/Images/amaals-kitchen.jpg" alt="Amaals Kitchen" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 1rem;">
+            <h1 style="color: #c0392b; margin-bottom: 0.5rem;">Contact Us</h1>
+            <p style="color: #7f8c8d;">Get in touch with Amaals Kitchen</p>
+        </div>
+
+        <div style="color: #2c3e50;">
+            <div style="margin-bottom: 2rem;">
+                <h3 style="color: #c0392b; margin-bottom: 1rem;">Address</h3>
+                <p>
+                    123 Main Street<br>
+                    Cape Town, Western Cape<br>
+                    South Africa, 8000
+                </p>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="color: #c0392b; margin-bottom: 1rem;">Phone</h3>
+                <p><a href="tel:+27123456789" style="color: #2c3e50; text-decoration: none;">+27 12 345 6789</a></p>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="color: #c0392b; margin-bottom: 1rem;">Email</h3>
+                <p><a href="mailto:info@amaals.com" style="color: #2c3e50; text-decoration: none;">info@amaals.com</a></p>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="color: #c0392b; margin-bottom: 1rem;">Hours</h3>
+                <p>
+                    Monday - Friday: 8:00 AM - 8:00 PM<br>
+                    Saturday: 9:00 AM - 9:00 PM<br>
+                    Sunday: 10:00 AM - 7:00 PM
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="@Url.Action("Menu", "Home")" class="cta-button" style="background: #c0392b; color: white; text-decoration: none; border: 2px solid #c0392b;">Order Now</a>
+            </div>
+        </div>
+    </div>
+</div>

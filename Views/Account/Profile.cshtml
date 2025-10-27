@@ -1,0 +1,42 @@
+﻿@model AmaalsKitchen.Models.User
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container my-2">
+    <center><h2 class="mb-4">My Profile</h2></center>
+
+    <center>
+        <img src="~/images/profile.png" style="width:150px; height:150px;" />
+    </center>
+
+    <div id="profileMessage"></div>
+
+    <div class="card p-4 shadow-sm rounded-3" style="max-width:600px; margin:auto; background-color: var(--amaals-light-cream);">
+        <div class="mb-3">
+            <label class="form-label fw-bold" style="color: var(--amaals-red);">First Name</label>
+            <p id="profileFirstName" class="form-control bg-white">@Model.FirstName</p>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold" style="color: var(--amaals-red);">Last Name</label>
+            <p id="profileLastName" class="form-control bg-white">@Model.LastName</p>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold" style="color: var(--amaals-red);">Email</label>
+            <p class="form-control bg-white">@Model.Email</p>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold" style="color: var(--amaals-red);">Phone Number</label>
+            <p id="profilePhoneNumber" class="form-control bg-white">@Model.PhoneNumber</p>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-action="EditProfile" class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i>Edit Profile
+            </a>
+            <a asp-action="Logout" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+        </div>
+    </div>
+</div>

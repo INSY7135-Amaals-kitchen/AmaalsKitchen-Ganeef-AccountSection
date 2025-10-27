@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Location";
+}
+
+<div class="main-content" style="justify-content: center; align-items: center; padding: 4rem 2rem;">
+    <div style="background: rgba(255, 255, 255, 0.95); padding: 3rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); max-width: 800px; width: 100%;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <img src="~/Images/amaals-kitchen.jpg" alt="Amaals Kitchen" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 1rem;">
+            <h1 style="color: #c0392b; margin-bottom: 0.5rem;">Find Us</h1>
+            <p style="color: #7f8c8d;">Visit Amaals Kitchen</p>
+        </div>
+
+        <div style="margin-bottom: 2rem; text-align: center;">
+            <div style="background: #f8f9fa; padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
+                <h3 style="color: #c0392b; margin-bottom: 1rem;">Our Location</h3>
+                <p style="color: #2c3e50; font-size: 1.1rem; line-height: 1.6;">
+                    <strong>Amaals Kitchen</strong><br>
+                    123 Main Street<br>
+                    Cape Town, Western Cape<br>
+                    South Africa, 8000
+                </p>
+            </div>
+
+            <!-- Placeholder for map -->
+            <iframe width="600" height="450" style="border:0" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/place?q=place_id:ChIJMdGBjdFCzB0RCxzA7dZdjAs&key=AIzaSyDb14PyaYrJSbhzavar2xk-qawt7DUqIkE"></iframe>
+
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div style="text-align: center; padding: 1rem;">
+                    <h4 style="color: #c0392b; margin-bottom: 0.5rem;">Parking</h4>
+                    <p style="color: #6c757d;">Free parking available</p>
+                </div>
+                <div style="text-align: center; padding: 1rem;">
+                    <h4 style="color: #c0392b; margin-bottom: 0.5rem;">Public Transport</h4>
+                    <p style="color: #6c757d;">Bus stop 2 minutes walk</p>
+                </div>
+                <div style="text-align: center; padding: 1rem;">
+                    <h4 style="color: #c0392b; margin-bottom: 0.5rem;">Accessibility</h4>
+                    <p style="color: #6c757d;">Wheelchair accessible</p>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="tel:+27123456789" class="cta-button" style="background: #c0392b; color: white; text-decoration: none; border: 2px solid #c0392b; margin-right: 1rem;">Call Us</a>
+                <a href="@Url.Action("Menu", "Home")" class="cta-button" style="background: transparent; color: #c0392b; text-decoration: none;">View Menu</a>
+            </div>
+        </div>
+    </div>
+</div>

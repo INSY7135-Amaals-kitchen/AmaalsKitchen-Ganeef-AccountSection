@@ -1,0 +1,1 @@
+﻿console.log("amaals-custom.js loaded");
