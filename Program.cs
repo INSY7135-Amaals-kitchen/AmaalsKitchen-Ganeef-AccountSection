@@ -40,6 +40,8 @@ namespace AmaalsKitchen
 
             // Register OrderService
             builder.Services.AddScoped<IOrderService, OrderService>();
+            // Add email service
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
             var app = builder.Build();
 
