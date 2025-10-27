@@ -3,7 +3,7 @@ using AmaalsKitchen.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity; 
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Linq;
 
@@ -32,7 +32,6 @@ namespace AmaalsKitchen.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Hardcoded Admin check first
                 if (model.Email == "admin@amaalskitchen.com" && model.Password == "Admin123")
                 {
                     HttpContext.Session.SetString("UserEmail", model.Email);
@@ -43,7 +42,6 @@ namespace AmaalsKitchen.Controllers
                     return RedirectToAction("AdminDashboard", "Admins");
                 }
 
-              
                 var user = _context.Users.FirstOrDefault(u => u.Email == model.Email);
                 if (user != null)
                 {
@@ -56,8 +54,6 @@ namespace AmaalsKitchen.Controllers
 
                         HttpContext.Session.SetString("UserEmail", user.Email);
                         HttpContext.Session.SetString("UserName", user.FirstName);
-
-                        
                         HttpContext.Session.SetString("UserRole", "User");
 
                         TempData["SuccessMessage"] = "Login successful!";
@@ -70,7 +66,6 @@ namespace AmaalsKitchen.Controllers
 
             return View(model);
         }
-
 
         // ===================== REGISTER =====================
         [HttpGet]
@@ -97,7 +92,6 @@ namespace AmaalsKitchen.Controllers
                     CreatedDate = DateTime.UtcNow
                 };
 
-                // hash password before saving
                 user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
 
                 _context.Users.Add(user);
@@ -126,7 +120,6 @@ namespace AmaalsKitchen.Controllers
                     return View(model);
                 }
 
-                // hash new password
                 user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
                 _context.SaveChanges();
 
@@ -209,11 +202,44 @@ namespace AmaalsKitchen.Controllers
             user.PhoneNumber = model.PhoneNumber;
 
             _context.SaveChanges();
-
             HttpContext.Session.SetString("UserName", user.FirstName);
 
             TempData["SuccessMessage"] = "Profile updated successfully!";
             return RedirectToAction("Profile");
+        }
+
+        // ===================== AJAX EDIT PROFILE =====================
+        [HttpPost]
+        public IActionResult EditProfileAjax([FromBody] EditProfileViewModel model)
+        {
+            var sessionEmail = HttpContext.Session.GetString("UserEmail");
+            var emailToUse = sessionEmail ?? model?.Email;
+
+            if (string.IsNullOrEmpty(emailToUse))
+                return Json(new { success = false, message = "Session expired. Please login again." });
+
+            if (!ModelState.IsValid)
+                return Json(new { success = false, message = "Invalid input. Please check all fields." });
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == emailToUse);
+            if (user == null)
+                return Json(new { success = false, message = "User not found." });
+
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.PhoneNumber = model.PhoneNumber;
+
+            _context.SaveChanges();
+            HttpContext.Session.SetString("UserName", user.FirstName);
+
+            return Json(new
+            {
+                success = true,
+                message = "Profile updated successfully!",
+                firstName = user.FirstName,
+                lastName = user.LastName,
+                phoneNumber = user.PhoneNumber
+            });
         }
     }
 }

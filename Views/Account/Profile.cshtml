@@ -1,41 +1,25 @@
 ﻿@model AmaalsKitchen.Models.User
-
 @{
     ViewData["Title"] = "My Profile";
 }
+
 <div class="container my-2">
     <center><h2 class="mb-4">My Profile</h2></center>
-
 
     <center>
         <img src="~/images/profile.png" style="width:150px; height:150px;" />
     </center>
 
+    <div id="profileMessage"></div>
 
-    <!-- Success / Error Messages -->
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <div class="card p-4 shadow-sm rounded-3" style="max-width: 600px; margin:auto; background-color: var(--amaals-light-cream);">
+    <div class="card p-4 shadow-sm rounded-3" style="max-width:600px; margin:auto; background-color: var(--amaals-light-cream);">
         <div class="mb-3">
             <label class="form-label fw-bold" style="color: var(--amaals-red);">First Name</label>
-            <p class="form-control bg-white">@Model.FirstName</p>
+            <p id="profileFirstName" class="form-control bg-white">@Model.FirstName</p>
         </div>
         <div class="mb-3">
             <label class="form-label fw-bold" style="color: var(--amaals-red);">Last Name</label>
-            <p class="form-control bg-white">@Model.LastName</p>
+            <p id="profileLastName" class="form-control bg-white">@Model.LastName</p>
         </div>
         <div class="mb-3">
             <label class="form-label fw-bold" style="color: var(--amaals-red);">Email</label>
@@ -43,7 +27,7 @@
         </div>
         <div class="mb-3">
             <label class="form-label fw-bold" style="color: var(--amaals-red);">Phone Number</label>
-            <p class="form-control bg-white">@Model.PhoneNumber</p>
+            <p id="profilePhoneNumber" class="form-control bg-white">@Model.PhoneNumber</p>
         </div>
 
         <div class="d-flex justify-content-between mt-4">

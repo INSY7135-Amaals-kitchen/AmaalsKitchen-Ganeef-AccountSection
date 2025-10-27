@@ -12,7 +12,7 @@
             <!-- Logo -->
             <div class="login-logo">
                 <div class="logo-img">
-                    <img src="~/Images/amaals kitchen.jpg" alt="AK" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    <img src="~/Images/amaals-kitchen.jpg" alt="AK" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                 </div>
 				<h4>Amaals Kitchen</h4>
             </div>
@@ -68,16 +68,34 @@
     </div>
 
     <!-- Right Side - Logo and Branding -->
-    <div class="login-right">
-        <div class="login-right-bg"></div>
-        <div class="login-right-content">
-            <div class="login-right-logo">AK</div>
-            <div class="login-right-since">SINCE 1991</div>
-            <h2>Welcome Back!</h2>
-            <p>Let's start ordering food now</p>
+    <div class="login-right"
+         style="display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; background-color: #fff; padding: 40px;">
+
+        <!-- Circular Image -->
+        <img src="~/images/amaals-kitchen.jpg"
+             alt="Amaal's Kitchen"
+             style="
+             width: 250px;
+             height: 250px;
+             border-radius: 50%;
+             object-fit: cover;
+             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+             margin-bottom: 30px;
+         ">
+
+        <!-- Text Underneath -->
+        <div class="login-right-content" style="text-align: center; color: #fff;">
+            <div class="login-right-logo" style="font-size: 60px; font-weight: bold; letter-spacing: 5px;">AK</div>
+            <div class="login-right-since" style="letter-spacing: 3px; font-size: 16px; margin-bottom: 15px;">SINCE 1991</div>
+            <h2 style="margin-bottom: 10px;">Welcome Back!</h2>
+            <p style="font-size: 18px;">Let's start ordering food now</p>
         </div>
     </div>
-</div>
+
+
+
+
+
 
 @section Scripts {
     @{
