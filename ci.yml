@@ -2,46 +2,38 @@
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - master
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - master
+      - main
 
 jobs:
   build:
+    name: Build and Analyze
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout code
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # required for SonarQube analysis
 
-      # 2️⃣ Setup .NET SDK
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'  # Change to your version, e.g., '6.0.x' or '7.0.x'
+          dotnet-version: '8.0.x'
 
-      # 3️⃣ Restore dependencies
       - name: Restore dependencies
         run: dotnet restore
 
-      # 4️⃣ Build
-      - name: Build project
-        run: dotnet build --no-restore --configuration Release
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
 
-      # 5️⃣ Run tests (optional if you don’t have tests)
-      - name: Run tests
-        run: dotnet test --no-build --configuration Release || echo "No tests found"
-
-      # 6️⃣ SonarQube Analysis
-      - name: SonarQube Scan
+      - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          dotnet tool install --global dotnet-sonarscanner
-          dotnet sonarscanner begin /k:"AmaalsKitchen-Ganeef-AccountSection" /o:"insy7135-amaals-kitchen" /d:sonar.host.url="$SONAR_HOST_URL" /d:sonar.login="$SONAR_TOKEN"
+          dotnet sonarscanner begin /k:"AmaalsKitchen-Ganeef-AccountSection" /o:"insy7135-amaals-kitchen" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$env:SONAR_TOKEN"
           dotnet build
-          dotnet sonarscanner end /d:sonar.login="$SONAR_TOKEN"
+          dotnet sonarscanner end /d:sonar.login="$env:SONAR_TOKEN"
