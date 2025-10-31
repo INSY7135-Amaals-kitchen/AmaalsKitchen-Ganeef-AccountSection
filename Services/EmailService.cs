@@ -1,4 +1,12 @@
-﻿using MailKit.Net.Smtp;
+﻿/// =============================================================================
+/// FILE: EmailService.cs
+/// PURPOSE: Handles email notifications for order confirmations and status updates.
+/// TECHNOLOGY: Uses MailKit library with Gmail SMTP (port 587, STARTTLS)
+/// CONFIGURATION: Requires appsettings.json EmailSettings section
+/// =============================================================================
+/// 
+using AmaalsKitchen.Services;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using System.Threading.Tasks;
